@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+
 class PlutoPagination extends PlutoStatefulWidget {
   const PlutoPagination(this.stateManager, {Key? key}) : super(key: key);
 
@@ -98,6 +100,24 @@ class _PlutoPaginationState extends _PlutoPaginationStateWithChange {
 
   void _firstPage() {
     _movePage(1);
+  }
+
+  void _reloadGrid() {
+    setState(() {
+      widget.stateManager.resetCurrentState();
+      _movePage(1);
+      EasyLoading.show(
+          status: 'Refreshing...', maskType: EasyLoadingMaskType.clear);
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          setAllDetails(userNumber);
+          myFuture = getVouchers();
+          myFutureBalance = getBalanceDetails();
+        });
+        EasyLoading.dismiss();
+        EasyLoading.showSuccess('Reloaded');
+      });
+    });
   }
 
   void _beforePage() {
@@ -228,6 +248,13 @@ class _PlutoPaginationState extends _PlutoPaginationStateWithChange {
                     mouseCursor: _isLastPage
                         ? SystemMouseCursors.basic
                         : SystemMouseCursors.click,
+                  ),
+                  IconButton(
+                    onPressed: _reloadGrid,
+                    icon: const Icon(Icons.refresh_rounded),
+                    color: _iconColor,
+                    disabledColor: _disabledIconColor,
+                    splashRadius: _iconSplashRadius,
                   ),
                 ],
               ),
